@@ -67,6 +67,11 @@ private:
 	ECheckBoxState IsUsingGitLfsLocking() const;
 	bool GetIsUsingGitLfsLocking() const;
 
+	void OnCheckedUsePluginGitLfs(ECheckBoxState NewCheckedState);
+	ECheckBoxState IsUsingPluginGitLfs() const;
+	bool GetIsUsingPluginGitLfs() const;
+
+
 	void OnLfsUserNameCommited(const FText& InText, ETextCommit::Type InCommitType);
 	FText GetLfsUserName() const;
 

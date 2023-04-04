@@ -540,6 +540,28 @@ void SGitSourceControlSettings::ConstructBasedOnEngineVersion( )
 				.HintText(LOCTEXT("LfsUserName_Hint", "Username to lock files on the LFS server"))
 			]
 		]
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			ROW_LEFT( 10.0f )
+			[
+				SNew(SCheckBox)
+				.IsChecked(Self::IsUsingPluginGitLfs())
+				.OnCheckStateChanged(this, &Self::OnCheckedUsePluginGitLfs)
+				.IsEnabled(this, &Self::CanUseGitLfsLocking)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("UsePluginGitLfs", "Use Plugin's Git LFS"))
+					.ToolTipText( TT_LFS )
+				]
+			]
+			ROW_RIGHT( 10.0f )
+			[
+				SNew(STextBlock)
+			]
+		]
 		// [Optional] Initial Git Commit
 		+SVerticalBox::Slot()
 		.AutoHeight()
@@ -927,6 +949,26 @@ ECheckBoxState SGitSourceControlSettings::IsUsingGitLfsLocking() const
 {
 	return (GetIsUsingGitLfsLocking() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
 }
+
+void SGitSourceControlSettings::OnCheckedUsePluginGitLfs(ECheckBoxState NewCheckedState)
+{
+	FGitSourceControlModule& GitSourceControl = FGitSourceControlModule::Get();
+	GitSourceControl.AccessSettings().SetUsingPluginGitLfs(NewCheckedState == ECheckBoxState::Checked);
+	GitSourceControl.AccessSettings().SaveSettings();
+	GitSourceControl.GetProvider().UpdateSettings();
+}
+
+bool SGitSourceControlSettings::GetIsUsingPluginGitLfs() const
+{
+	const FGitSourceControlModule& GitSourceControl = FGitSourceControlModule::Get();
+	return GitSourceControl.AccessSettings().IsUsingPluginGitLfs();
+}
+
+ECheckBoxState SGitSourceControlSettings::IsUsingPluginGitLfs() const
+{
+	return (GetIsUsingPluginGitLfs() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+}
+
 
 void SGitSourceControlSettings::OnLfsUserNameCommited(const FText& InText, ETextCommit::Type InCommitType)
 {

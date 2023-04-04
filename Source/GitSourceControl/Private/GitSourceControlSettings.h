@@ -22,6 +22,12 @@ public:
 	/** Configure the usage of Git LFS file Locking workflow */
 	bool SetUsingGitLfsLocking(const bool InUsingGitLfsLocking);
 
+	/** Tell if using the plugin's Git LFS binary */
+	bool IsUsingPluginGitLfs() const;
+
+	/** Configure the usage of the plugin's Git LFS binary */
+	bool SetUsingPluginGitLfs(const bool InUsingGitLfsLocking);
+
 	/** Get the username used by the Git LFS 2 File Locks server */
 	const FString GetLfsUserName() const;
 
@@ -43,6 +49,9 @@ private:
 
 	/** Tells if using the Git LFS file Locking workflow */
 	bool bUsingGitLfsLocking = true;
+
+	/** Tells if using the plugin's Git LFS binary */
+	bool bUsingPluginGitLfs = true;
 
 	/** Username used by the Git LFS 2 File Locks server */
 	FString LfsUserName;

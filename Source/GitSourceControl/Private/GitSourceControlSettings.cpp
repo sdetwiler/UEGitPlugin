@@ -53,6 +53,23 @@ bool FGitSourceControlSettings::SetUsingGitLfsLocking(const bool InUsingGitLfsLo
 	return bChanged;
 }
 
+/** Tell if using the plugin's Git LFS binary */
+bool FGitSourceControlSettings::IsUsingPluginGitLfs() const
+{
+	FScopeLock ScopeLock(&CriticalSection);
+	return bUsingPluginGitLfs;
+}
+
+/** Configure the usage of the plugin's Git LFS binary */
+bool FGitSourceControlSettings::SetUsingPluginGitLfs(const bool InUsingPluginGitLfs)
+{
+	FScopeLock ScopeLock(&CriticalSection);
+	const bool bChanged = (bUsingPluginGitLfs != InUsingPluginGitLfs);
+	bUsingPluginGitLfs = InUsingPluginGitLfs;
+	return bChanged;
+}
+
+
 const FString FGitSourceControlSettings::GetLfsUserName() const
 {
 	FScopeLock ScopeLock(&CriticalSection);

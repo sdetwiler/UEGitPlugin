@@ -137,6 +137,8 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 #if PLATFORM_MAC
 	// The Cocoa application does not inherit shell environment variables, so add the path expected to have git-lfs to PATH
 	FString PathEnv = FPlatformMisc::GetEnvironmentVariable(TEXT("PATH"));
+	UE_LOG(LogSourceControl, Log, TEXT("PATH: '%s'"), *PathEnv); // SCD	
+
 	FString GitInstallPath = FPaths::GetPath(InPathToGitBinary);
 
 	TArray<FString> PathArray;
@@ -158,6 +160,8 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 	}
 #endif
 
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: '%s %s'"), *PathToGitOrEnvBinary, *FullCommand); // SCD
+
 	FPlatformProcess::ExecProcess(*PathToGitOrEnvBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 
 #if UE_BUILD_DEBUG
@@ -175,6 +179,9 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 		OutResults.Append(OutErrors);
 		OutErrors.Empty();
 	}
+
+	UE_LOG(LogSourceControl, Log, TEXT("ReturnCode: %d ExpectedReturnCode: %d"), ReturnCode, ExpectedReturnCode); // SCD
+	UE_LOG(LogSourceControl, Log, TEXT("%s"), *OutResults); // SCD
 
 	return ReturnCode == ExpectedReturnCode;
 }
@@ -653,39 +660,41 @@ bool RunCommand(const FString& InCommand, const FString& InPathToGitBinary, cons
 	return bResult;
 }
 
-#ifndef GIT_USE_CUSTOM_LFS
-#define GIT_USE_CUSTOM_LFS 1
-#endif
-
 bool RunLFSCommand(const FString& InCommand, const FString& InRepositoryRoot, const FString& GitBinaryFallback, const TArray<FString>& InParameters, const TArray<FString>& InFiles,
 				   TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	FString Command = InCommand;
-#if GIT_USE_CUSTOM_LFS
-	FString BaseDir = IPluginManager::Get().FindPlugin("GitSourceControl")->GetBaseDir();
-#if PLATFORM_WINDOWS
-	FString LFSLockBinary = FString::Printf(TEXT("%s/git-lfs.exe"), *BaseDir);
-#elif PLATFORM_MAC
-#if ENGINE_MAJOR_VERSION >= 5
-#if PLATFORM_MAC_ARM64
-	FString LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-arm64"), *BaseDir);
-#else
-	FString LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-amd64"), *BaseDir);
-#endif
-#else
-	FString LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-amd64"), *BaseDir);
-#endif
-#elif PLATFORM_LINUX
-	FString LFSLockBinary = FString::Printf(TEXT("%s/git-lfs"), *BaseDir);
-#else
-	ensureMsgf(false, TEXT("Unhandled platform for LFS binary!"));
-	const FString& LFSLockBinary = GitBinaryFallback;
-	Command = TEXT("lfs ") + Command;
-#endif
-#else
-	const FString& LFSLockBinary = GitBinaryFallback;
-	Command = TEXT("lfs ") + Command;
-#endif
+	FString LFSLockBinary;
+
+	FGitSourceControlModule& GitSourceControl = FGitSourceControlModule::Get();
+	if(GitSourceControl.AccessSettings().IsUsingPluginGitLfs())
+	{
+		FString BaseDir = IPluginManager::Get().FindPlugin("GitSourceControl")->GetBaseDir();
+	#if PLATFORM_WINDOWS
+		LFSLockBinary = FString::Printf(TEXT("%s/git-lfs.exe"), *BaseDir);
+	#elif PLATFORM_MAC
+	#if ENGINE_MAJOR_VERSION >= 5
+	#if PLATFORM_MAC_ARM64
+		LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-arm64"), *BaseDir);
+	#else
+		LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-amd64"), *BaseDir);
+	#endif
+	#else
+		LFSLockBinary = FString::Printf(TEXT("%s/git-lfs-mac-amd64"), *BaseDir);
+	#endif
+	#elif PLATFORM_LINUX
+		LFSLockBinary = FString::Printf(TEXT("%s/git-lfs"), *BaseDir);
+	#else
+		ensureMsgf(false, TEXT("Unhandled platform for LFS binary!"));
+		LFSLockBinary = GitBinaryFallback;
+		Command = TEXT("lfs ") + Command;
+	#endif
+	}
+	else
+	{
+		LFSLockBinary = GitBinaryFallback;
+		Command = TEXT("lfs ") + Command;
+	}
 
 	return GitSourceControlUtils::RunCommand(Command, LFSLockBinary, InRepositoryRoot, InParameters, InFiles, OutResults, OutErrorMessages);
 }

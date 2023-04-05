@@ -430,6 +430,7 @@ void SGitSourceControlSettings::ConstructBasedOnEngineVersion( )
 	#define TT_UserName LOCTEXT("UserNameLabel_Tooltip", "Git Username fetched from local config")
 	#define TT_Email LOCTEXT("GitUserEmail_Tooltip", "Git E-mail fetched from local config")
 	#define TT_LFS LOCTEXT("UseGitLfsLocking_Tooltip", "Uses Git LFS 2 File Locking workflow (CheckOut and Commit/Push).")
+	#define TT_PluginLFS LOCTEXT("UsePluginGitLfs_Tooltip", "Use plugin's Git LFS binaries")
 
 	ChildSlot
 	[
@@ -553,8 +554,8 @@ void SGitSourceControlSettings::ConstructBasedOnEngineVersion( )
 				.Content()
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("UsePluginGitLfs", "Use Plugin's Git LFS"))
-					.ToolTipText( TT_LFS )
+					.Text(LOCTEXT("UsePluginGitLfs", "Use plugin's Git LFS"))
+					.ToolTipText( TT_PluginLFS )
 				]
 			]
 			ROW_RIGHT( 10.0f )

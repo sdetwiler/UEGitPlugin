@@ -137,8 +137,6 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 #if PLATFORM_MAC
 	// The Cocoa application does not inherit shell environment variables, so add the path expected to have git-lfs to PATH
 	FString PathEnv = FPlatformMisc::GetEnvironmentVariable(TEXT("PATH"));
-	UE_LOG(LogSourceControl, Log, TEXT("PATH: '%s'"), *PathEnv); // SCD	
-
 	FString GitInstallPath = FPaths::GetPath(InPathToGitBinary);
 
 	TArray<FString> PathArray;
@@ -159,9 +157,6 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 		FullCommand = FString::Printf(TEXT("PATH=\"%s%s%s\" \"%s\" %s"), *GitInstallPath, FPlatformMisc::GetPathVarDelimiter(), *PathEnv, *InPathToGitBinary, *FullCommand);
 	}
 #endif
-
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: '%s %s'"), *PathToGitOrEnvBinary, *FullCommand); // SCD
-
 	FPlatformProcess::ExecProcess(*PathToGitOrEnvBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 
 #if UE_BUILD_DEBUG
@@ -179,9 +174,6 @@ bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitB
 		OutResults.Append(OutErrors);
 		OutErrors.Empty();
 	}
-
-	UE_LOG(LogSourceControl, Log, TEXT("ReturnCode: %d ExpectedReturnCode: %d"), ReturnCode, ExpectedReturnCode); // SCD
-	UE_LOG(LogSourceControl, Log, TEXT("%s"), *OutResults); // SCD
 
 	return ReturnCode == ExpectedReturnCode;
 }
